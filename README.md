@@ -121,17 +121,12 @@ A Streamlit dashboard provides:
 ## Dashboard Preview
 
 ### Main Dashboard
-![Dashboard Overview](images/dashboard-overview.png)
+![Dashboard Overview](Images/dashboard overview.png)
 
 ---
 
 ### Trend Monitoring
-![Trend Charts](images/trends.png)
-
----
-
-### Critical Alert Example
-![Critical Alert](images/critical-alert.png)
+![Trend Charts](Images/graphs.png)
 
 ---
 
