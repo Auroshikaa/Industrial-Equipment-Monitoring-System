@@ -1,1 +1,0 @@
-# Industrial-Equipment-Monitoring-System
