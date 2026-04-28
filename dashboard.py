@@ -1,18 +1,21 @@
 import sqlite3
+
 import pandas as pd
 import streamlit as st
 from streamlit_autorefresh import st_autorefresh
+
 
 DATABASE_NAME = "monitoring.db"
 
 
 def load_data() -> pd.DataFrame:
+    """Load all stored machine telemetry from SQLite."""
     connection = sqlite3.connect(DATABASE_NAME)
 
     query = """
-    SELECT *
-    FROM readings
-    ORDER BY timestamp DESC
+        SELECT *
+        FROM readings
+        ORDER BY timestamp DESC
     """
 
     df = pd.read_sql_query(query, connection)
@@ -34,6 +37,7 @@ df = load_data()
 
 if df.empty:
     st.warning("No telemetry data found. Start the backend and simulator first.")
+
 else:
     machine_options = sorted(df["machine_id"].unique())
 
@@ -43,7 +47,6 @@ else:
     )
 
     filtered_df = df[df["machine_id"] == selected_machine].copy()
-
     latest = filtered_df.iloc[0]
 
     st.subheader("Current Machine Status")
@@ -51,20 +54,9 @@ else:
 
     col1, col2, col3 = st.columns(3)
 
-    col1.metric(
-        "Temperature (°C)",
-        latest["temperature"]
-    )
-
-    col2.metric(
-        "Vibration",
-        latest["vibration"]
-    )
-
-    col3.metric(
-        "Status",
-        latest["status"]
-    )
+    col1.metric("Temperature (°C)", latest["temperature"])
+    col2.metric("Vibration", latest["vibration"])
+    col3.metric("Status", latest["status"])
 
     if latest["status"] == "Critical":
         st.error("CRITICAL ALERT: Immediate maintenance required.")
@@ -73,15 +65,13 @@ else:
     else:
         st.success("Machine operating normally.")
 
+    chart_df = filtered_df.sort_values("timestamp")
+
     st.subheader("Temperature Trend")
-    st.line_chart(
-        filtered_df.set_index("timestamp")["temperature"]
-    )
+    st.line_chart(chart_df.set_index("timestamp")["temperature"])
 
     st.subheader("Vibration Trend")
-    st.line_chart(
-        filtered_df.set_index("timestamp")["vibration"]
-    )
+    st.line_chart(chart_df.set_index("timestamp")["vibration"])
 
     st.subheader("Recent Readings")
 

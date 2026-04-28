@@ -7,7 +7,6 @@ from datetime import datetime
 
 API_URL = "http://127.0.0.1:5000/readings"
 
-
 MACHINES = [
     {
         "machine_id": "MOTOR_01",
@@ -57,14 +56,14 @@ MACHINES = [
 
 
 def choose_machine_state(machine: dict) -> str:
+    """Choose the current machine state based on its failure profile."""
     roll = random.random()
 
     if roll < machine["failure_chance"]:
         return "critical"
     elif roll < machine["failure_chance"] + 0.20:
         return "warning"
-    else:
-        return "normal"
+    return "normal"
 
 
 def generate_value(value_range: tuple[float, float]) -> float:
@@ -72,21 +71,24 @@ def generate_value(value_range: tuple[float, float]) -> float:
 
 
 def classify_status(machine: dict, temperature: float, vibration: float) -> str:
-    critical_temp_limit = machine["critical_temp"][0]
-    critical_vibration_limit = machine["critical_vibration"][0]
-
-    warning_temp_limit = machine["warning_temp"][0]
-    warning_vibration_limit = machine["warning_vibration"][0]
-
-    if temperature >= critical_temp_limit or vibration >= critical_vibration_limit:
+    """Classify machine health using machine-specific thresholds."""
+    if (
+        temperature >= machine["critical_temp"][0]
+        or vibration >= machine["critical_vibration"][0]
+    ):
         return "Critical"
-    elif temperature >= warning_temp_limit or vibration >= warning_vibration_limit:
+
+    if (
+        temperature >= machine["warning_temp"][0]
+        or vibration >= machine["warning_vibration"][0]
+    ):
         return "Warning"
-    else:
-        return "Normal"
+
+    return "Normal"
 
 
 def generate_reading(machine: dict) -> dict:
+    """Generate one telemetry reading for a single machine."""
     state = choose_machine_state(machine)
 
     temperature = generate_value(machine[f"{state}_temp"])
@@ -104,13 +106,13 @@ def generate_reading(machine: dict) -> dict:
 
 
 def send_reading(reading: dict) -> None:
+    """Send telemetry to the backend API."""
     try:
         response = requests.post(API_URL, json=reading)
 
         print("Sent telemetry:")
         print(json.dumps(reading, indent=2))
-        print("Server response:")
-        print(response.json())
+        print("Server response:", response.json())
         print("-" * 40)
 
     except requests.exceptions.RequestException as error:
@@ -118,7 +120,7 @@ def send_reading(reading: dict) -> None:
 
 
 def main() -> None:
-    print("Starting multi-machine telemetry simulator...\n")
+    print("Starting industrial equipment telemetry simulator...\n")
 
     while True:
         for machine in MACHINES:
